@@ -1,24 +1,29 @@
-name: CI Pipeline
+name: Databricks CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
+      - name: Install Databricks CLI
+        run: |
+          pip install databricks-cli
 
-      - name: Install flake8
-        run: pip install flake8
+      - name: Configure Databricks
+        run: |
+          databricks configure --token <<EOF
+          ${{ secrets.DATABRICKS_HOST }}
+          ${{ secrets.DATABRICKS_TOKEN }}
+          EOF
 
-      - name: Lint Code (Check Syntax)
-        run: flake8 notebooks/etl_job.py
+      - name: Trigger Databricks Job
+        run: |
+          databricks jobs run-now --job-id 1
