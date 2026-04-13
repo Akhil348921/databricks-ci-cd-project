@@ -1,8 +1,12 @@
-# Databricks ETL Sample (PySpark)
+# Databricks ETL Sample (Final Version)
 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
-spark = SparkSession.builder.getOrCreate()
+print("Job Started")
+
+# Initialize Spark
+spark = SparkSession.builder.appName("ETL Job Example").getOrCreate()
 
 # Step 1: Create sample data
 data = [
@@ -15,11 +19,16 @@ columns = ["id", "name", "salary"]
 
 df = spark.createDataFrame(data, columns)
 
+print("=== Raw Data ===")
+df.show()
+
 # Step 2: Transformation
 df_filtered = df.filter(df.salary > 1500)
 
-# Step 3: Output
-df_filtered.show()
+# Add new column
+df_updated = df_filtered.withColumn("bonus", col("salary") * 0.1)
 
-# Optional: Write to DBFS
-df_filtered.write.mode("overwrite").csv("/dbfs/FileStore/output_data")
+print("=== Transformed Data ===")
+df_updated.show()
+
+print("Job Completed")
